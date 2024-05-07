@@ -1,0 +1,35 @@
+#include<msp.h>
+voidPORT1_IRQHandler(void) {
+// Check if the interrupt is triggered by the button (P1.1)
+// Toggle the LED (P1.0)
+if (P1->IFG& BIT1){
+P1->OUT ^= BIT0;
+// Clear the interrupt flag for the button
+P1->IFG&= ~BIT1;}
+}
+intmain(void) {
+// Stop watchdog timer
+WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
+// Configure onboard LED (P1.0) as output
+P1->DIR |= BIT0;
+//P1->OUT &= ~BIT0;
+// Configure onboard button (P1.1) as input with pull-up resistor and interrupt enabled on
+falling edge
+P1->DIR&= ~BIT1; // Set P1.1 as input
+P1->REN |= BIT1; // Enable pull-up resistor
+P1->OUT |= BIT1; // Set pull-up resistor
+P1->IES |= BIT1; // Set interrupt on falling edge
+P1->IFG&= ~BIT1; // Clear interrupt flag
+P1->IE |= BIT1; // Enable interrupt
+// Enable Port 1 interrupt
+NVIC_EnableIRQ(PORT1_IRQn);
+// Enable global interrupts
+__enable_irq();
+// Enter low power mode
+__sleep();
+while (1) {
+
+EE3016 – Embedded Systems Lab 16
+
+}
+}
