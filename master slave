@@ -1,0 +1,63 @@
+/////////////MASTER//////////////////
+
+#include <msp.h>
+#define SS_PIN BIT0 // Slave Select Pin
+void SPI_init_master() {
+// Configure SPI pins
+P1->SEL0 |= BIT5 | BIT6 | BIT7; // Set P1.5, P1.6, P1.7 as SPI pins
+P2->DIR |= BIT1; // Configure P2.1 as output for LED
+// Configure SPI
+EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_SWRST; // Put eUSCI state machine in reset
+EUSCI_B0->CTLW0 = EUSCI_B_CTLW0_MST | EUSCI_B_CTLW0_SYNC |
+EUSCI_B_CTLW0_MSB | EUSCI_B_CTLW0_UCSSEL_2 |
+EUSCI_B_CTLW0_SWRST;
+EUSCI_B0->BRW = 0x01; // Set clock divider
+EUSCI_B0->CTLW0 &= ~EUSCI_B_CTLW0_SWRST; // Initialize eUSCI state machine
+}
+void SPI_send_data(uint8_t data) {
+while (!(EUSCI_B0->IFG & EUSCI_B_IFG_TXIFG)); // Wait for TX buffer to be empty
+EUSCI_B0->TXBUF = data; // Send data
+while (!(EUSCI_B0->IFG & EUSCI_B_IFG_RXIFG)); // Wait for RX buffer to receive
+data
+P2->OUT ^= BIT1; // Toggle LED
+}
+void main(void) {
+WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD; // Stop watchdog timer
+SPI_init_master();
+while (1) {
+SPI_send_data(55); // Send data
+__delay_cycles(1000000); // Delay
+}
+
+EE3016 – Embedded Systems Lab 20
+
+}
+
+
+///////////////SLAVE////////////
+
+#include <msp.h>
+void SPI_init_slave() {
+// Configure SPI pins
+P1->SEL0 |= BIT5 | BIT6 | BIT7; // Set P1.5, P1.6, P1.7 as SPI pins
+P2->DIR |= BIT2; // Configure P2.2 as output for LED
+// Configure SPI
+EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_SWRST; // Put eUSCI state machine in reset
+EUSCI_B0->CTLW0 = EUSCI_B_CTLW0_UCSSEL_2 | EUSCI_B_CTLW0_SWRST;
+EUSCI_B0->BRW = 0x01; // Set clock divider
+EUSCI_B0->CTLW0 &= ~EUSCI_B_CTLW0_MSB; // Set as slave, MSB first
+EUSCI_B0->CTLW0 &= ~EUSCI_B_CTLW0_SWRST; // Initialize eUSCI state machine
+}
+uint8_t SPI_receive_data() {
+while (!(EUSCI_B0->IFG & EUSCI_B_IFG_RXIFG)); // Wait for RX buffer to receive
+P2->OUT ^= BIT2; // Toggle LED
+return EUSCI_B0->RXBUF; // Return received data
+}
+void main(void) {
+WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD; // Stop watchdog timer
+SPI_init_slave();
+while (1) {
+uint8_t received_data = SPI_receive_data(); // Receive data
+// Process received data
+}
+}
