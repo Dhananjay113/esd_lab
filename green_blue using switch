@@ -9,8 +9,7 @@ for(i=0;i<integer;i++){
 }
 voidmain(void)
 {
-WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD; // stop
-watchdog timer
+WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD; // stopwatchdog timer
 P2->DIR |=BIT1;
 P2->DIR |=BIT2;
 P2->DIR |=BIT0;
