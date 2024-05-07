@@ -1,0 +1,20 @@
+#include <msp.h>
+void delay(unsigned long iter)
+{
+volatile unsigned long i;
+for (i = 0; i < iter; i++) {}
+}
+int main(void)
+{
+// Stop watchdog timer
+WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
+// Set P1.0 as output
+P1->DIR |= BIT0;
+while (1)
+{
+// Toggle P1.0
+P1->OUT ^= BIT0;
+// Delay for some time
+delay(100000);
+}
+}
