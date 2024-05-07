@@ -1,0 +1,30 @@
+#include<ti/devices/msp432p4xx/inc/msp.h>
+#include<ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include<ti/grlib/grlib.h>
+#include"HAL_I2C.h"
+#include"HAL_OPT3001.h"
+
+/* Graphic library context */
+Graphics_Context g_sContext;
+/* Variable for storing lux value returned from OPT3001 */
+float lux;
+
+EE3016 – Embedded Systems Lab 11
+
+intmain(void)
+{
+/* Halting WDT and disabling master interrupts */
+MAP_WDT_A_holdTimer();
+MAP_Interrupt_disableMaster();
+/* Initialize I2C communication */
+Init_I2C_GPIO();
+I2C_init();
+/* Initialize OPT3001 digital ambient light sensor */
+OPT3001_init();
+__delay_cycles(100000);
+while(1)
+{
+/* Obtain lux value from OPT3001 */
+lux = OPT3001_getLux();
+}
+}
